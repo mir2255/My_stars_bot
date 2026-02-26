@@ -3,86 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mening Yulduzli Ilovam</title>
+    <title>Yulduzli Clicker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Ilova ko'rinishi (Dizayn) */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            font-family: sans-serif;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
-            text-align: center;
         }
-        .container {
-            padding: 20px;
-            border-radius: 15px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        .score { font-size: 48px; font-weight: bold; margin: 20px; }
+        .coin {
+            width: 150px; height: 150px;
+            background: orange; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 80px; cursor: pointer; user-select: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
         }
-        button {
-            margin-top: 20px;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            background-color: var(--tg-theme-button-color, #248bcf);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-        .user-info {
-            margin-bottom: 10px;
+        .coin:active { transform: scale(0.9); }
+        .stars-btn {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background: #248bcf;
+            color: white; border: none; border-radius: 10px;
+            font-weight: bold; cursor: pointer;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <div class="user-info">
-            <h2 id="welcome-msg">Yuklanmoqda...</h2>
-        </div>
-        <p>Bu sizning birinchi Telegram Mini Appingiz!</p>
-        <button onclick="showAlert()">Menga bosing</button>
-        <br>
-        <button onclick="closeApp()" style="background-color: #e53935;">Yopish</button>
-    </div>
+    <div class="score" id="score">0</div>
+    <div class="coin" onclick="tap()">⭐</div>
+    <p>Ochko yig'ish uchun yulduzni bosing!</p>
+    
+    <button class="stars-btn" onclick="sendStars()">Dasturchiga 1 ⭐️ sovg'a qilish</button>
 
     <script>
-        // Telegram WebApp obyektini ishga tushiramiz
         const tg = window.Telegram.WebApp;
-        
-        // Ilovani to'liq ekranga yoyish
+        let count = 0;
+
+        function tap() {
+            count++;
+            document.getElementById('score').innerText = count;
+            tg.HapticFeedback.impactOccurred('medium'); // Telefon titraydi
+        }
+
+        function sendStars() {
+            // Bu funksiya orqali to'lov oynasini chiqaramiz
+            tg.showAlert("Yulduzlar bilan to'lov tizimi bot orqali ulanadi. Hozircha bu demo tugma!");
+        }
+
         tg.expand();
-
-        // Foydalanuvchi ma'lumotlarini olish
-        const user = tg.initDataUnsafe?.user;
-        const welcomeMsg = document.getElementById('welcome-msg');
-
-        if (user) {
-            welcomeMsg.innerText = `Salom, ${user.first_name}! 👋`;
-        } else {
-            welcomeMsg.innerText = "Salom, Mehmon!";
-        }
-
-        // Tugma bosilganda xabar chiqarish
-        function showAlert() {
-            tg.showAlert("Yulduzlar ishlashga tayyormisiz? Tez orada bu yerda o'yin bo'ladi!");
-        }
-
-        // Ilovani yopish funksiyasi
-        function closeApp() {
-            tg.close();
-        }
     </script>
 </body>
 </html>
