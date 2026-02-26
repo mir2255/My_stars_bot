@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mening Yulduzli Ilovam</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Ilova ko'rinishi (Dizayn) */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+            border-radius: 15px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            background-color: var(--tg-theme-button-color, #248bcf);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .user-info {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="user-info">
+            <h2 id="welcome-msg">Yuklanmoqda...</h2>
+        </div>
+        <p>Bu sizning birinchi Telegram Mini Appingiz!</p>
+        <button onclick="showAlert()">Menga bosing</button>
+        <br>
+        <button onclick="closeApp()" style="background-color: #e53935;">Yopish</button>
+    </div>
+
+    <script>
+        // Telegram WebApp obyektini ishga tushiramiz
+        const tg = window.Telegram.WebApp;
+        
+        // Ilovani to'liq ekranga yoyish
+        tg.expand();
+
+        // Foydalanuvchi ma'lumotlarini olish
+        const user = tg.initDataUnsafe?.user;
+        const welcomeMsg = document.getElementById('welcome-msg');
+
+        if (user) {
+            welcomeMsg.innerText = `Salom, ${user.first_name}! 👋`;
+        } else {
+            welcomeMsg.innerText = "Salom, Mehmon!";
+        }
+
+        // Tugma bosilganda xabar chiqarish
+        function showAlert() {
+            tg.showAlert("Yulduzlar ishlashga tayyormisiz? Tez orada bu yerda o'yin bo'ladi!");
+        }
+
+        // Ilovani yopish funksiyasi
+        function closeApp() {
+            tg.close();
+        }
+    </script>
+</body>
+</html>
