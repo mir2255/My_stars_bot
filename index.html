@@ -3,76 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapSwap Clone - Shop</title>
+    <title>TapSwap Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #000; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 0; user-select: none; }
-        .header { padding: 20px; font-size: 24px; font-weight: bold; color: #f3ba2f; }
-        .coin-area { margin-top: 50px; }
-        .coin-btn { width: 200px; height: 200px; border-radius: 50%; border: 8px solid #444; background: radial-gradient(#f3ba2f, #d4a017); cursor: pointer; transition: transform 0.1s; }
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; user-select: none; }
+        .header { padding: 20px; }
+        .league { color: #f3ba2f; font-size: 18px; font-weight: bold; text-transform: uppercase; }
+        .balance { font-size: 45px; font-weight: 800; margin: 10px 0; display: flex; align-items: center; justify-content: center; }
+        .balance img { width: 40px; margin-right: 10px; }
+        .coin-btn { width: 250px; height: 250px; border-radius: 50%; border: 12px solid #333; background: radial-gradient(#f3ba2f, #b8860b); cursor: pointer; transition: 0.1s; box-shadow: 0 0 30px rgba(243, 186, 47, 0.3); }
         .coin-btn:active { transform: scale(0.95); }
-        .shop-btn { position: fixed; bottom: 20px; right: 20px; padding: 15px 30px; background: #007aff; border: none; border-radius: 10px; color: white; font-weight: bold; }
-        #shop-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); padding-top: 50px; }
-        .item { background: #222; margin: 10px; padding: 15px; border-radius: 10px; border: 1px solid #444; }
-        .buy-btn { background: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 5px; margin-top: 5px; }
+        .energy-box { margin-top: 40px; }
+        .energy-bar { width: 80%; height: 12px; background: #222; border-radius: 10px; margin: 10px auto; overflow: hidden; }
+        .energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #f3ba2f, #fff); transition: 0.2s; }
+        .footer { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; padding: 15px 0; border-top: 1px solid #333; }
+        .nav-item { flex: 1; color: #888; font-size: 12px; cursor: pointer; }
+        .nav-item.active { color: #f3ba2f; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; padding-top: 50px; }
     </style>
 </head>
 <body>
-
-    <div class="header" id="balanceDisplay">Coins: 0</div>
-    
-    <div class="coin-area">
-        <button class="coin-btn" onclick="tap()"></button>
+    <div class="header">
+        <div class="league" id="league">Mis Darajasi</div>
+        <div class="balance"><img src="https://cryptologos.cc/logos/toncoin-ton-logo.png" alt=""> <span id="balance">0</span></div>
     </div>
 
-    <button class="shop-btn" onclick="toggleShop(true)">🛒 Do'kon</button>
+    <div style="margin-top: 20px;">
+        <button class="coin-btn" onclick="tap(event)"></button>
+    </div>
 
-    <div id="shop-modal">
-        <h2>Boosterlar</h2>
-        <div class="item">
-            <div>⚡ Multi-Tap (Level <span id="m-lvl">1</span>)</div>
-            <div style="font-size: 12px; color: #888;">Har bir bosishda ko'proq tanga beradi</div>
-            <button class="buy-btn" onclick="buy('multitap')">Sotib olish (💰 500)</button>
+    <div class="energy-box">
+        <div id="energy-text">⚡ 500 / 500</div>
+        <div class="energy-bar"><div class="energy-fill" id="energy-fill"></div></div>
+    </div>
+
+    <div class="footer">
+        <div class="nav-item active">Tap</div>
+        <div class="nav-item" onclick="showModal('ref-modal')">Ref</div>
+        <div class="nav-item" onclick="showModal('shop-modal')">Shop</div>
+    </div>
+
+    <div id="shop-modal" class="modal">
+        <h2>Do'kon</h2>
+        <div style="background: #1a1a1a; margin: 20px; padding: 20px; border-radius: 15px;">
+            <h3>🤖 TapBot</h3>
+            <p>Avtomatik tanga yig'uvchi</p>
+            <button onclick="buyBot()" style="background:#f3ba2f; color:#000; padding:10px 20px; border:none; border-radius:10px; font-weight:bold;">20 ⭐️ Stars</button>
         </div>
-        <button onclick="toggleShop(false)" style="margin-top: 20px; background: none; border: 1px solid white; color: white; padding: 10px 20px; border-radius: 10px;">Yopish</button>
+        <button onclick="hideModal('shop-modal')">Yopish</button>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand();
-
         let coins = 0;
-        let multiLevel = 1;
+        let energy = 500;
+        let multi = 1;
 
-        function tap() {
-            coins += multiLevel;
-            updateUI();
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        function toggleShop(show) {
-            document.getElementById('shop-modal').style.display = show ? 'block' : 'none';
-        }
-
-        function buy(type) {
-            let price = (type === 'multitap') ? 500 * multiLevel : 0;
-            
-            if (coins >= price) {
-                coins -= price;
-                if(type === 'multitap') multiLevel++;
+        function tap(e) {
+            if (energy >= multi) {
+                coins += multi;
+                energy -= multi;
                 updateUI();
-                tg.showPopup({ message: "Sotib olindi!" });
-                
-                // Botga ma'lumot yuborish (bazada saqlash uchun)
-                tg.sendData(JSON.stringify({action: "buy", type: type, new_level: multiLevel, balance: coins}));
-            } else {
-                tg.showPopup({ message: "Mablag' yetarli emas!" });
+                tg.HapticFeedback.impactOccurred('medium');
+                // Botga har 10 bosishda ma'lumot yuborish (bazaga saqlash uchun)
+                if (coins % 10 === 0) saveData();
             }
         }
 
         function updateUI() {
-            document.getElementById('balanceDisplay').innerText = "Coins: " + coins;
-            document.getElementById('m-lvl').innerText = multiLevel;
+            document.getElementById('balance').innerText = coins;
+            document.getElementById('energy-text').innerText = `⚡ ${energy} / 500`;
+            document.getElementById('energy-fill').style.width = (energy / 500 * 100) + "%";
+            
+            if(coins > 5000) document.getElementById('league').innerText = "Oltin Darajasi";
+            if(coins > 20000) document.getElementById('league').innerText = "Platina Darajasi";
+        }
+
+        setInterval(() => { if(energy < 500) { energy++; updateUI(); } }, 2000);
+
+        function showModal(id) { document.getElementById(id).style.display = 'block'; }
+        function hideModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function saveData() {
+            tg.sendData(JSON.stringify({action: "sync", coins: coins, energy: energy}));
+        }
+
+        function buyBot() {
+            tg.sendData(JSON.stringify({action: "buy_bot", price: 20}));
         }
     </script>
 </body>
