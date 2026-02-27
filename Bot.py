@@ -1,20 +1,17 @@
 import telebot
 from telebot import types
 
-# BotFather-dan olgan YANGI TOKENNI shu yerga qo'ying
 TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg'
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.InlineKeyboardMarkup()
-    # Hozircha oddiy sayt qo'yamiz, bot ishlashini tekshirish uchun
-    web_app = types.WebAppInfo("https://google.com")
-    button = types.InlineKeyboardButton("O'yinni ochish", web_app=web_app)
-    markup.add(button)
+    # Siz yaratgan o'yin linki
+    web_app = types.WebAppInfo("https://mir2255.github.io/My_stars_bot/")
+    btn = types.InlineKeyboardButton("O'yinni ochish", web_app=web_app)
+    markup.add(btn)
     
-    bot.send_message(message.chat.id, "Tabriklayman! Bot ishladi! ✅", reply_markup=markup)
+    bot.send_message(message.chat.id, "Tabriklayman! Bot ishladi! ✅\nO'yinni boshlash uchun tugmani bosing:", reply_markup=markup)
 
-if __name__ == "__main__":
-    bot.remove_webhook()
-    bot.polling(none_stop=True)
+bot.polling(none_stop=True)
