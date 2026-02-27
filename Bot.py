@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 
 # O'z tokiningizni kiriting
-TOKEN = '8361228448:AAENkqz-ksApxYloCpd1ZPPQDWA...' 
+TOKEN = 8361228448:AAHldiripHrzrQA1rQyvbWcheuHMljJ5B7o
 
 bot = telebot.TeleBot(TOKEN)
 
