@@ -1,7 +1,7 @@
 import telebot
 from telebot import types
 
-TOKEN = '7629202302:AAHgO_WzL94XpW9L1kM_XqY_lXzXzXzXzXz' # Tokeningizni tekshiring
+TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg' # Tokeningizni tekshiring
 
 bot = telebot.TeleBot(TOKEN)
 
