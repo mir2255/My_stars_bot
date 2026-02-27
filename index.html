@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 import sqlite3
 
-TOKEN = '7629202302:AAHgO_WzL94XpW9L1kM_XqY_lXzXzXzXzXz' # O'z tokeningizni kiriting
+TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg' # O'z tokeningizni kiriting
 bot = telebot.TeleBot(TOKEN)
 
 def init_db():
