@@ -1,12 +1,13 @@
 import telebot
 from telebot import types
 import sqlite3
+import time
 
-# 1. Tokenni to'g'ri o'rnatish
-TOKEN = '8361228448:AAGgNsRk9Xvf5frIoUI3QthXUNEAhRRVTio'
+# Siz bergan eng yangi token
+TOKEN = '8361228448:AAF7Zf-3o9ziQRtfUu1Nz_QHDWEjAX8od98'
 bot = telebot.TeleBot(TOKEN)
 
-# 2. Ma'lumotlar bazasi
+# Ma'lumotlar bazasini sozlash
 def init_db():
     conn = sqlite3.connect('startap_pro.db')
     cursor = conn.cursor()
@@ -17,7 +18,6 @@ def init_db():
 
 init_db()
 
-# 3. Start komandasi va Referal tizimi
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
@@ -27,6 +27,7 @@ def start(message):
     cursor = conn.cursor()
     cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (user_id,))
     
+    # Do'stini chaqirgan bo'lsa 5000 ⭐ bonus
     if len(args) > 1 and args[1].isdigit():
         referrer_id = int(args[1])
         if referrer_id != user_id:
@@ -36,17 +37,16 @@ def start(message):
     conn.close()
 
     markup = types.InlineKeyboardMarkup(row_width=1)
-    web_app = types.WebAppInfo(f"https://mir2255.github.io/My_stars_bot/")
+    web_app = types.WebAppInfo("https://mir2255.github.io/My_stars_bot/")
     
     btn_play = types.InlineKeyboardButton("🎮 StarTap-ni boshlash", web_app=web_app)
-    btn_invite = types.InlineKeyboardButton("👥 Do'stni taklif qilish (+5000 ⭐)", switch_inline_query=f"\nStarTap-da yulduz yig'ing! \nt.me/StarTap_bot?start={user_id}")
+    btn_invite = types.InlineKeyboardButton("👥 Do'stni taklif qilish (+5000 ⭐)", switch_inline_query=f"\nt.me/StarTap_bot?start={user_id}")
     btn_wallet = types.InlineKeyboardButton("💎 Hamyonni ulash (TON)", callback_data="connect_wallet")
     
     markup.add(btn_play, btn_invite, btn_wallet)
 
-    bot.send_message(message.chat.id, "🌟 **StarTap Pro** ishga tushdi!\n\nDo'stlarni chaqiring va darajangizni oshiring!", parse_mode="Markdown", reply_markup=markup)
+    bot.send_message(message.chat.id, "🌟 **StarTap PRO** ishga tushdi!\n\nYangi token ulandi. O'yinni boshlang va do'stlarni taklif qiling!", parse_mode="Markdown", reply_markup=markup)
 
-# 4. Hamyonni saqlash
 @bot.callback_query_handler(func=lambda call: call.data == "connect_wallet")
 def wallet_request(call):
     msg = bot.send_message(call.message.chat.id, "TON hamyon manzilingizni yuboring:")
@@ -62,7 +62,12 @@ def save_wallet(message):
     conn.close()
     bot.send_message(message.chat.id, "✅ Hamyon saqlandi!")
 
-# 5. Botni ishga tushirish (Conflict xatosini oldini olish uchun)
+# Conflict (409) xatosini oldini olish uchun asosiy qism
 if __name__ == '__main__':
-    bot.remove_webhook() # Eski ulanishlarni uzish
-    bot.polling(none_stop=True)
+    try:
+        bot.remove_webhook() # Eski ulanishlarni uzish
+        time.sleep(1) # Tizimga nafas olishga vaqt berish
+        print("Bot muvaffaqiyatli ishga tushdi!")
+        bot.polling(none_stop=True)
+    except Exception as e:
+        print(f"Xatolik yuz berdi: {e}")
