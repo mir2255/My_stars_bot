@@ -1,40 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StarTap</title>
+    <title>StarTap Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #0e1621; color: white; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #score { font-size: 48px; font-weight: bold; color: #f1c40f; margin-bottom: 20px; }
-        .star-button { font-size: 150px; cursor: pointer; user-select: none; transition: transform 0.1s; }
-        .star-button:active { transform: scale(0.9); }
-        h1 { margin-bottom: 10px; font-size: 24px; color: #3498db; }
+        body { background: radial-gradient(circle, #1b2735 0%, #090a0f 100%); color: white; text-align: center; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        #level-name { color: #cd7f32; font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        #score { font-size: 45px; font-weight: bold; margin: 10px 0; color: #f1c40f; text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+        .progress-container { width: 80%; background: #333; height: 12px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #444; }
+        #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #f1c40f, #e67e22); border-radius: 10px; transition: width 0.3s; }
+        .star-main { font-size: 160px; cursor: pointer; user-select: none; transition: transform 0.1s; filter: drop-shadow(0 0 20px rgba(241, 196, 15, 0.3)); }
+        .star-main:active { transform: scale(0.92); }
     </style>
 </head>
 <body>
-    <h1>StarTap 🌟</h1>
+    <div id="level-name">🥉 MIS DARAJASI</div>
     <div id="score">0</div>
-    <div class="star-button" id="tapBtn">⭐</div>
+    
+    <div class="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <div class="star-main" id="tapBtn">⭐</div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // O'yinni to'liq ekranda ochish
+        tg.expand();
 
         let score = 0;
-        const scoreElement = document.getElementById('score');
-        const tapBtn = document.getElementById('tapBtn');
+        let levels = [
+            { name: "🥉 MIS", min: 0, color: "#cd7f32" },
+            { name: "🥈 KUMUSH", min: 1000, color: "#bdc3c7" },
+            { name: "🥇 OLTIN", min: 5000, color: "#f1c40f" },
+            { name: "💎 PLATINA", min: 15000, color: "#3498db" }
+        ];
 
-        tapBtn.addEventListener('click', () => {
+        const scoreEl = document.getElementById('score');
+        const levelEl = document.getElementById('level-name');
+        const progressEl = document.getElementById('progress-bar');
+
+        document.getElementById('tapBtn').addEventListener('click', () => {
             score++;
-            scoreElement.innerText = score;
-            
-            // Haptics (Vibratsiya) - telefon titraydi
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
+            scoreEl.innerText = score;
+            updateLevel();
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         });
+
+        function updateLevel() {
+            let currentLevel = levels[0];
+            let nextLevelMin = levels[1].min;
+
+            for (let i = levels.length - 1; i >= 0; i--) {
+                if (score >= levels[i].min) {
+                    currentLevel = levels[i];
+                    nextLevelMin = levels[i+1] ? levels[i+1].min : score * 2;
+                    break;
+                }
+            }
+
+            levelEl.innerText = currentLevel.name + " DARAJASI";
+            levelEl.style.color = currentLevel.color;
+            
+            let percent = (score / nextLevelMin) * 100;
+            progressEl.style.width = (percent > 100 ? 100 : percent) + "%";
+        }
     </script>
 </body>
 </html>
