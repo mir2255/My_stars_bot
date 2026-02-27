@@ -1,19 +1,63 @@
 import telebot
 from telebot import types
+import sqlite3
 
-# BotFather'dan olgan tokenni mana shu qo'shtirnoq ichiga aniq qilib qo'ying
-TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg' 
-
+TOKEN = '7629202302:AAHgO_WzL94XpW9L1kM_XqY_lXzXzXzXzXz' # O'z tokeningizni kiriting
 bot = telebot.TeleBot(TOKEN)
+
+def init_db():
+    conn = sqlite3.connect('startap_pro.db')
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users 
+                      (user_id INTEGER PRIMARY KEY, balance INTEGER DEFAULT 0, wallet TEXT, referrals INTEGER DEFAULT 0)''')
+    conn.commit()
+    conn.close()
+
+init_db()
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.InlineKeyboardMarkup()
-    # O'yiningiz manzili
-    web_app = types.WebAppInfo("https://mir2255.github.io/My_stars_bot/")
-    btn = types.InlineKeyboardButton("🎮 O'yinni boshlash", web_app=web_app)
-    markup.add(btn)
+    user_id = message.from_user.id
+    args = message.text.split()
     
-    bot.send_message(message.chat.id, "Xush kelibsiz! O'yinni boshlash uchun tugmani bosing:", reply_markup=markup)
+    conn = sqlite3.connect('startap_pro.db')
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (user_id,))
+    
+    # Do'stni taklif qilganlik uchun 5000 bonus
+    if len(args) > 1 and args[1].isdigit():
+        referrer_id = int(args[1])
+        if referrer_id != user_id:
+            cursor.execute("UPDATE users SET balance = balance + 5000, referrals = referrals + 1 WHERE user_id = ?", (referrer_id,))
+    
+    conn.commit()
+    conn.close()
+
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    # GitHub Pages manzilingizni tekshiring
+    web_app = types.WebAppInfo(f"https://mir2255.github.io/My_stars_bot/")
+    
+    btn_play = types.InlineKeyboardButton("🎮 StarTap-ni boshlash", web_app=web_app)
+    btn_invite = types.InlineKeyboardButton("👥 Do'stni taklif qilish (+5000 ⭐)", switch_inline_query=f"\nt.me/bot_usernamingiz?start={user_id}")
+    btn_wallet = types.InlineKeyboardButton("💎 Hamyonni ulash (TON)", callback_data="connect_wallet")
+    
+    markup.add(btn_play, btn_invite, btn_wallet)
+
+    bot.send_message(message.chat.id, f"🌟 **StarTap PRO**-ga xush kelibsiz!\n\nHar bir do'stingiz uchun 5,000 ⭐ bonus oling!", parse_mode="Markdown", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data == "connect_wallet")
+def wallet_request(call):
+    msg = bot.send_message(call.message.chat.id, "TON hamyoningiz manzilini yuboring:")
+    bot.register_next_step_handler(msg, save_wallet)
+
+def save_wallet(message):
+    wallet_address = message.text
+    user_id = message.from_user.id
+    conn = sqlite3.connect('startap_pro.db')
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET wallet = ? WHERE user_id = ?", (wallet_address, user_id))
+    conn.commit()
+    conn.close()
+    bot.send_message(message.chat.id, "✅ Hamyon muvaffaqiyatli saqlandi!")
 
 bot.polling(none_stop=True)
