@@ -2,9 +2,11 @@ import telebot
 from telebot import types
 import sqlite3
 
-TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg' # O'z tokeningizni kiriting
+# Siz bergan yangi va tartibli token
+TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg' 
 bot = telebot.TeleBot(TOKEN)
 
+# Ma'lumotlar bazasini yaratish (Ochko, Hamyon va Referallar uchun)
 def init_db():
     conn = sqlite3.connect('startap_pro.db')
     cursor = conn.cursor()
@@ -24,7 +26,7 @@ def start(message):
     cursor = conn.cursor()
     cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (user_id,))
     
-    # Do'stni taklif qilganlik uchun 5000 bonus
+    # Do'stni taklif qilgani uchun 5000 ⭐ bonus berish
     if len(args) > 1 and args[1].isdigit():
         referrer_id = int(args[1])
         if referrer_id != user_id:
@@ -33,8 +35,8 @@ def start(message):
     conn.commit()
     conn.close()
 
+    # Tugmalar menyusi
     markup = types.InlineKeyboardMarkup(row_width=1)
-    # GitHub Pages manzilingizni tekshiring
     web_app = types.WebAppInfo(f"https://mir2255.github.io/My_stars_bot/")
     
     btn_play = types.InlineKeyboardButton("🎮 StarTap-ni boshlash", web_app=web_app)
@@ -43,11 +45,15 @@ def start(message):
     
     markup.add(btn_play, btn_invite, btn_wallet)
 
-    bot.send_message(message.chat.id, f"🌟 **StarTap PRO**-ga xush kelibsiz!\n\nHar bir do'stingiz uchun 5,000 ⭐ bonus oling!", parse_mode="Markdown", reply_markup=markup)
+    bot.send_message(message.chat.id, 
+                     f"🌟 **StarTap Pro-ga xush kelibsiz!**\n\n"
+                     f"Yulduzlarni yig'ing, darajangizni oshiring va do'stlaringizni taklif qilib ko'proq bonus oling!", 
+                     parse_mode="Markdown", reply_markup=markup)
 
+# Hamyonni ulash funksiyasi
 @bot.callback_query_handler(func=lambda call: call.data == "connect_wallet")
 def wallet_request(call):
-    msg = bot.send_message(call.message.chat.id, "TON hamyoningiz manzilini yuboring:")
+    msg = bot.send_message(call.message.chat.id, "Kripto hamyoningiz (TON) manzilini yuboring:")
     bot.register_next_step_handler(msg, save_wallet)
 
 def save_wallet(message):
@@ -58,6 +64,6 @@ def save_wallet(message):
     cursor.execute("UPDATE users SET wallet = ? WHERE user_id = ?", (wallet_address, user_id))
     conn.commit()
     conn.close()
-    bot.send_message(message.chat.id, "✅ Hamyon muvaffaqiyatli saqlandi!")
+    bot.send_message(message.chat.id, "✅ Hamyoningiz muvaffaqiyatli saqlandi!")
 
 bot.polling(none_stop=True)
