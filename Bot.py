@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 
 # BotFather-dan olgan YANGI TOKENNI shu yerga qo'ying
-TOKEN = 'YANGI_TOKENNI_SHU_YERGA_QOYING'
+TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg'
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
