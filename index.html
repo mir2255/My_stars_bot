@@ -3,7 +3,7 @@ from telebot import types
 import sqlite3
 
 # 1. Tokenni to'g'ri o'rnatish
-TOKEN = '8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg' 
+TOKEN = '8361228448:AAGgNsRk9Xvf5frIoUI3QthXUNEAhRRVTio'
 bot = telebot.TeleBot(TOKEN)
 
 # 2. Ma'lumotlar bazasi
