@@ -1,25 +1,61 @@
-import telebot
-from telebot import types
-import time
+import logging
+import json
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters import Command
+from aiogram.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 
-# Sizning eng yangi tokeningiz
-TOKEN = '8361228448:AAF7Zf-3o9ziQRtfUu1Nz_QHDWEjAX8od98'
-bot = telebot.TeleBot(TOKEN)
+# --- SOZLAMALAR ---
+TOKEN = "8361228448:AAF1x3Y87Q0vmAEs_Dp9xnJNWGJdJYCyfsg"
+WEB_APP_URL = "https://mir2255.github.io/My_stars_bot/"
+# ------------------
 
-@bot.message_handler(commands=['start'])
-def start(message):
-    markup = types.InlineKeyboardMarkup()
-    # O'yin manzili (GitHub Pages orqali)
-    web_app = types.WebAppInfo("https://mir2255.github.io/My_stars_bot/")
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+@dp.message(Command("start"))
+async def start_handler(message: types.Message):
+    # Asosiy klaviatura
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="O'yinni boshlash 🎮", web_app=WebAppInfo(url=WEB_APP_URL))]
+    ])
     
-    btn_play = types.InlineKeyboardButton("🎮 StarTap-ni boshlash", web_app=web_app)
-    markup.add(btn_play)
+    welcome_text = (
+        f"Salom, {message.from_user.first_name}! 👋\n\n"
+        "TapSwap uslubidagi o'yinimizga xush kelibsiz!\n"
+        "Tanga yig'ish va do'kondan foydalanish uchun pastdagi tugmani bosing."
+    )
     
-    bot.send_message(message.chat.id, "🌟 **StarTap**-ga xush kelibsiz!\n\nO'yinni boshlash uchun quyidagi tugmani bosing:", 
-                     parse_mode="Markdown", reply_markup=markup)
+    await message.answer(welcome_text, reply_markup=kb)
 
-if __name__ == '__main__':
-    bot.remove_webhook()
-    time.sleep(1)
-    print("Bot muvaffaqiyatli ishga tushdi!")
-    bot.polling(none_stop=True)
+@dp.message(F.web_app_data)
+async def web_app_data_handler(message: types.Message):
+    # Web App'dan kelgan JSON ma'lumotni o'qiymiz
+    try:
+        data = json.loads(message.web_app_data.data)
+        
+        action = data.get("action")
+        item_type = data.get("type")
+        new_lvl = data.get("new_level")
+        balance = data.get("balance")
+        
+        if action == "buy":
+            msg = (
+                "✅ **Xarid muvaffaqiyatli yakunlandi!**\n\n"
+                f"🛒 Buyum: {item_type.capitalize()}\n"
+                f"🆙 Yangi daraja: {new_lvl}\n"
+                f"💰 Qolgan balans: {balance} tanga"
+            )
+            await message.answer(msg, parse_mode="Markdown")
+            
+    except Exception as e:
+        logging.error(f"Xatolik yuz berdi: {e}")
+        await message.answer("Xarid ma'lumotlarini qabul qilishda xatolik yuz berdi.")
+
+async def main():
+    logging.basicConfig(level=logging.INFO)
+    print("Bot ishga tushdi...")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
