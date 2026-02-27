@@ -2,69 +2,77 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StarTap Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapSwap Clone - Shop</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: radial-gradient(circle, #1b2735 0%, #090a0f 100%); color: white; text-align: center; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-        #level-name { color: #cd7f32; font-size: 20px; font-weight: bold; margin-bottom: 5px; }
-        #score { font-size: 45px; font-weight: bold; margin: 10px 0; color: #f1c40f; text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        .progress-container { width: 80%; background: #333; height: 12px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #444; }
-        #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #f1c40f, #e67e22); border-radius: 10px; transition: width 0.3s; }
-        .star-main { font-size: 160px; cursor: pointer; user-select: none; transition: transform 0.1s; filter: drop-shadow(0 0 20px rgba(241, 196, 15, 0.3)); }
-        .star-main:active { transform: scale(0.92); }
+        body { background: #000; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 0; user-select: none; }
+        .header { padding: 20px; font-size: 24px; font-weight: bold; color: #f3ba2f; }
+        .coin-area { margin-top: 50px; }
+        .coin-btn { width: 200px; height: 200px; border-radius: 50%; border: 8px solid #444; background: radial-gradient(#f3ba2f, #d4a017); cursor: pointer; transition: transform 0.1s; }
+        .coin-btn:active { transform: scale(0.95); }
+        .shop-btn { position: fixed; bottom: 20px; right: 20px; padding: 15px 30px; background: #007aff; border: none; border-radius: 10px; color: white; font-weight: bold; }
+        #shop-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); padding-top: 50px; }
+        .item { background: #222; margin: 10px; padding: 15px; border-radius: 10px; border: 1px solid #444; }
+        .buy-btn { background: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 5px; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div id="level-name">🥉 MIS DARAJASI</div>
-    <div id="score">0</div>
+
+    <div class="header" id="balanceDisplay">Coins: 0</div>
     
-    <div class="progress-container">
-        <div id="progress-bar"></div>
+    <div class="coin-area">
+        <button class="coin-btn" onclick="tap()"></button>
     </div>
 
-    <div class="star-main" id="tapBtn">⭐</div>
+    <button class="shop-btn" onclick="toggleShop(true)">🛒 Do'kon</button>
+
+    <div id="shop-modal">
+        <h2>Boosterlar</h2>
+        <div class="item">
+            <div>⚡ Multi-Tap (Level <span id="m-lvl">1</span>)</div>
+            <div style="font-size: 12px; color: #888;">Har bir bosishda ko'proq tanga beradi</div>
+            <button class="buy-btn" onclick="buy('multitap')">Sotib olish (💰 500)</button>
+        </div>
+        <button onclick="toggleShop(false)" style="margin-top: 20px; background: none; border: 1px solid white; color: white; padding: 10px 20px; border-radius: 10px;">Yopish</button>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = 0;
-        let levels = [
-            { name: "🥉 MIS", min: 0, color: "#cd7f32" },
-            { name: "🥈 KUMUSH", min: 1000, color: "#bdc3c7" },
-            { name: "🥇 OLTIN", min: 5000, color: "#f1c40f" },
-            { name: "💎 PLATINA", min: 15000, color: "#3498db" }
-        ];
+        let coins = 0;
+        let multiLevel = 1;
 
-        const scoreEl = document.getElementById('score');
-        const levelEl = document.getElementById('level-name');
-        const progressEl = document.getElementById('progress-bar');
+        function tap() {
+            coins += multiLevel;
+            updateUI();
+            tg.HapticFeedback.impactOccurred('light');
+        }
 
-        document.getElementById('tapBtn').addEventListener('click', () => {
-            score++;
-            scoreEl.innerText = score;
-            updateLevel();
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-        });
+        function toggleShop(show) {
+            document.getElementById('shop-modal').style.display = show ? 'block' : 'none';
+        }
 
-        function updateLevel() {
-            let currentLevel = levels[0];
-            let nextLevelMin = levels[1].min;
-
-            for (let i = levels.length - 1; i >= 0; i--) {
-                if (score >= levels[i].min) {
-                    currentLevel = levels[i];
-                    nextLevelMin = levels[i+1] ? levels[i+1].min : score * 2;
-                    break;
-                }
-            }
-
-            levelEl.innerText = currentLevel.name + " DARAJASI";
-            levelEl.style.color = currentLevel.color;
+        function buy(type) {
+            let price = (type === 'multitap') ? 500 * multiLevel : 0;
             
-            let percent = (score / nextLevelMin) * 100;
-            progressEl.style.width = (percent > 100 ? 100 : percent) + "%";
+            if (coins >= price) {
+                coins -= price;
+                if(type === 'multitap') multiLevel++;
+                updateUI();
+                tg.showPopup({ message: "Sotib olindi!" });
+                
+                // Botga ma'lumot yuborish (bazada saqlash uchun)
+                tg.sendData(JSON.stringify({action: "buy", type: type, new_level: multiLevel, balance: coins}));
+            } else {
+                tg.showPopup({ message: "Mablag' yetarli emas!" });
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('balanceDisplay').innerText = "Coins: " + coins;
+            document.getElementById('m-lvl').innerText = multiLevel;
         }
     </script>
 </body>
